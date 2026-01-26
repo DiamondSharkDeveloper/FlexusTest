@@ -27,6 +27,7 @@ namespace Project.Core.Bootstrap
         private async UniTaskVoid Run()
         {
             container = new DIContainer();
+            DIContainerAccessor.Set(container);
 
             BindCore(container);
             BindSpawning(container);
