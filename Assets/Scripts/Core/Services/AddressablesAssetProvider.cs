@@ -3,7 +3,7 @@ using Cysharp.Threading.Tasks;
 using UnityEngine.AddressableAssets;
 using UnityEngine.ResourceManagement.AsyncOperations;
 
-namespace Project.Core.Services
+namespace Core.Services
 {
     // Path: Assets/_Project/Scripts/Core/Services/AddressablesAssetProvider.cs
     // Purpose: Wrap Addressables API, track handles so we can release cleanly.

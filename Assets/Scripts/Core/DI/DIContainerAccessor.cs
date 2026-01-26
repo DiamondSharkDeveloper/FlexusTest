@@ -1,4 +1,4 @@
-﻿namespace Project.Core.DI
+﻿namespace Core.DI
 {
     /// <summary>
     /// Provides access to the application's DI container for scene-level composition roots.

@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace Project.Gameplay.Spawning
+namespace Gameplay.Spawning
 {
     /// <summary>
     /// Central spawn entry point used by gameplay initialization.

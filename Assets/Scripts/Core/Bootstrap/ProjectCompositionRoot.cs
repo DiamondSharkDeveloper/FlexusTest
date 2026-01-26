@@ -1,11 +1,11 @@
-﻿using Cysharp.Threading.Tasks;
-using Project.Core.DI;
-using Project.Core.Services;
-using Project.Core.StateMachine;
-using Project.Gameplay.Spawning;
+﻿using Core.DI;
+using Core.Services;
+using Core.StateMachine;
+using Cysharp.Threading.Tasks;
+using Gameplay.Spawning;
 using UnityEngine;
 
-namespace Project.Core.Bootstrap
+namespace Core.Bootstrap
 {
     /// <summary>
     /// Application entry point responsible for composition:

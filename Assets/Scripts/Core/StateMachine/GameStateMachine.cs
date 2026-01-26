@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 
-namespace Project.Core.StateMachine
+namespace Core.StateMachine
 {
     // Path: Assets/_Project/Scripts/Core/StateMachine/GameStateMachine.cs
     // Purpose: Switch between game states (Bootstrap -> Gameplay, etc).

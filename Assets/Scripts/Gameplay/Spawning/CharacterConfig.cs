@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Project.Gameplay.Spawning
+namespace Gameplay.Spawning
 {
     [CreateAssetMenu(menuName = "Project/Spawning/Character Config")]
     public sealed class CharacterConfig : SpawnableConfig

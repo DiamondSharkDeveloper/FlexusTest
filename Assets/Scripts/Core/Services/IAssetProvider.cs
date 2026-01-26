@@ -1,6 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 
-namespace Project.Core.Services
+namespace Core.Services
 {
     // Path: Assets/_Project/Scripts/Core/Services/IAssetProvider.cs
     // Purpose: One place to load/release assets (Addressables now, maybe something else later ).

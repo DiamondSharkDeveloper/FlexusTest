@@ -1,6 +1,6 @@
 ﻿using Cysharp.Threading.Tasks;
 
-namespace Project.Core.Services
+namespace Core.Services
 {
     // Path: Assets/_Project/Scripts/Core/Services/ISceneLoader.cs
 

@@ -1,8 +1,8 @@
-﻿using Cysharp.Threading.Tasks;
-using Project.Core.StateMachine;
+﻿using Core.StateMachine;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace Project.Core.Bootstrap
+namespace Core.Bootstrap
 {
     /// <summary>
     /// Gameplay state starts the runtime gameplay flow.

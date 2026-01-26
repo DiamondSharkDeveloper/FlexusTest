@@ -1,6 +1,4 @@
-﻿using Gameplay.InputLogic;
-
-namespace Project.Gameplay.Input
+﻿namespace Gameplay.InputLogic
 {
     /// <summary>
     /// Receives input snapshots.

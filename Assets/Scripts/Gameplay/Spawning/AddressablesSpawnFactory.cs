@@ -1,8 +1,8 @@
-﻿using Cysharp.Threading.Tasks;
-using Project.Core.Services;
+﻿using Core.Services;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace Project.Gameplay.Spawning
+namespace Gameplay.Spawning
 {
     /// <summary>
     /// Spawns prefabs using Addressables address provided in the config.

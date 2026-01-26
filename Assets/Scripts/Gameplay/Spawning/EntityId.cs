@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Project.Gameplay.Spawning
+namespace Gameplay.Spawning
 {
     /// <summary>
     /// Lightweight identifier used to reference spawnable entities from configs.

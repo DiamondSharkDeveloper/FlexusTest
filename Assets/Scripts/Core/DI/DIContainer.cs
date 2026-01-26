@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Project.Core.DI
+namespace Core.DI
 {
     // Path: Assets/_Project/Scripts/Core/DI/DIContainer.cs
     // Purpose: Tiny DI container: bind singletons/transients and resolve them by type.

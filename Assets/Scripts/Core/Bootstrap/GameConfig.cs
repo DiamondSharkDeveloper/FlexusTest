@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Project.Core.Bootstrap
+namespace Core.Bootstrap
 {
     [CreateAssetMenu(menuName = "Project/Game Config")]
     public sealed class GameConfig : ScriptableObject

@@ -1,8 +1,8 @@
-﻿using Cysharp.Threading.Tasks;
-using Project.Core.Services;
-using Project.Core.StateMachine;
+﻿using Core.Services;
+using Core.StateMachine;
+using Cysharp.Threading.Tasks;
 
-namespace Project.Core.Bootstrap
+namespace Core.Bootstrap
 {
     /// <summary>
     /// Loads the main gameplay scene and transfers control to GameplayState.

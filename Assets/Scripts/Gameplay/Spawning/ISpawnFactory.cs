@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using UnityEngine;
 
-namespace Project.Gameplay.Spawning
+namespace Gameplay.Spawning
 {
     /// <summary>
     /// Factoy abstraction for spawning prefab instances based on a config.

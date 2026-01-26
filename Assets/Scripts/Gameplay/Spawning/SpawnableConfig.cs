@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Project.Gameplay.Spawning
+namespace Gameplay.Spawning
 {
     /// <summary>
     /// Base config for any spawnable entity.

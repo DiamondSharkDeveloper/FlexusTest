@@ -1,4 +1,4 @@
-﻿namespace Project.Core.DI
+﻿namespace Core.DI
 {
     // Path: Assets/_Project/Scripts/Core/DI/IInstaller.cs
     // Purpose: Optional pattern - split bindings into multiple installers.

@@ -1,33 +1,44 @@
-﻿using Gameplay.InputLogic;
-
-namespace Project.Gameplay.Input
+﻿namespace Gameplay.InputLogic
 {
     /// <summary>
-    /// Routes input from a source to the current active consumer.
-    /// This allows switching control targets without changing input code.
+    /// Routes input from a source to input consumers.
+    /// Primary consumer is the active controllable (character/vehicle).
+    /// Secondary consumer is typically the camera rig (look input).
     /// </summary>
     public sealed class InputRouter
     {
         private readonly IInputSource inputSource;
-        private IInputConsumer consumer;
+
+        private IInputConsumer primaryConsumer;
+        private IInputConsumer secondaryConsumer;
 
         public InputRouter(IInputSource inputSource)
         {
             this.inputSource = inputSource;
         }
 
-        public void SetConsumer(IInputConsumer consumer)
+        public void SetPrimaryConsumer(IInputConsumer consumer)
         {
-            this.consumer = consumer;
+            primaryConsumer = consumer;
+        }
+
+        public void SetSecondaryConsumer(IInputConsumer consumer)
+        {
+            secondaryConsumer = consumer;
         }
 
         public void Tick()
         {
-            if (consumer == null)
+            if (primaryConsumer == null && secondaryConsumer == null)
                 return;
 
             GameplayInput input = inputSource.Read();
-            consumer.Consume(in input);
+
+            if (secondaryConsumer != null)
+                secondaryConsumer.Consume(in input);
+
+            if (primaryConsumer != null)
+                primaryConsumer.Consume(in input);
         }
     }
 }

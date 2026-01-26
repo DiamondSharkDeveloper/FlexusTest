@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Project.Gameplay.Input
+namespace Gameplay.InputLogic
 {
     /// <summary>
     /// Unity update loop bridge for InputRouter.

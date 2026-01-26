@@ -1,7 +1,7 @@
 ﻿using Cysharp.Threading.Tasks;
 using UnityEngine.SceneManagement;
 
-namespace Project.Core.Services
+namespace Core.Services
 {
     // Path: Assets/_Project/Scripts/Core/Services/SceneLoader.cs
     // Purpose: Default scene loading implementation (single mode).
