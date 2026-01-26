@@ -1,0 +1,82 @@
+# =========================
+# Unity
+# =========================
+
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]ser[Ss]ettings/
+[Mm]emoryCaptures/
+
+# Addressables build output
+[Aa]ssets/AddressableAssetsData/*/Build/
+[Aa]ssets/AddressableAssetsData/*/BuildScriptCache/
+[Aa]ssets/AddressableAssetsData/*/BuildLogs/
+
+# Crash reports
+sysinfo.txt
+
+# =========================
+# Visual Studio / Rider / VSCode
+# =========================
+
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# =========================
+# OS junk
+# =========================
+
+.DS_Store
+.DS_Store?
+Thumbs.db
+desktop.ini
+
+# =========================
+# Unity generated files
+# =========================
+
+*.csproj
+*.unityproj
+*.sln
+*.tmp
+*.log
+
+# =========================
+# Builds / Archives
+# =========================
+
+*.apk
+*.aab
+*.app
+*.exe
+*.ipa
+*.xcodeproj
+*.xcworkspace
+
+# =========================
+# Addressables local cache
+# =========================
+
+[Aa]ssets/StreamingAssets/aa.meta
+[Aa]ssets/StreamingAssets/aa/
+
+# =========================
+# Optional - if you use Unity Recorder
+# =========================
+
+Recordings/
