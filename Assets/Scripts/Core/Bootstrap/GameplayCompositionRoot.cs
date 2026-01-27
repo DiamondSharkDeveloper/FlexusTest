@@ -1,6 +1,7 @@
 ﻿using Core.DI;
 using Cysharp.Threading.Tasks;
 using Gameplay.CameraLogic;
+using Gameplay.CharacterLogic;
 using Gameplay.InputLogic;
 using Gameplay.Spawning;
 using UnityEngine;
@@ -89,10 +90,30 @@ namespace Core.Bootstrap
                 return;
             }
 
-            await spawnService.SpawnCharacter(
+            Component spawned = await spawnService.SpawnCharacter(
                 characterConfig,
                 characterSpawnPoint.position,
                 characterSpawnPoint.rotation);
+
+            if (spawned == null)
+                return;
+
+            CharacterRoot characterRoot =
+                spawned.GetComponent<CharacterRoot>();
+
+            if (characterRoot == null)
+            {
+                Debug.LogError("Spawned character prefab has no CharacterRoot.");
+                return;
+            }
+
+            characterRoot.EnableControl();
+
+            if (inputRouter != null)
+                inputRouter.SetPrimaryConsumer(characterRoot);
+
+            if (cameraRigController != null && characterRoot.CameraTarget != null)
+                cameraRigController.SetTarget(characterRoot.CameraTarget);
         }
 
         private async UniTask SpawnVehicles()
