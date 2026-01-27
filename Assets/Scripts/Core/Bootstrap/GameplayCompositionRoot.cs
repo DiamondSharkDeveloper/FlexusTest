@@ -13,11 +13,8 @@ namespace Core.Bootstrap
 {
     /// <summary>
     /// Scene-level composition root for the gameplay scene.
-    /// Responsible for:
-    /// - wiring input router and camera rig
-    /// - spawning initial character and vehicles
-    /// - creating control switching and interaction services
-    /// - driving a minimal interaction prompt UI
+    /// Spawns the character once and spawns one random vehicle per vehicle spawn point.
+    /// Wires input, camera follow, control switching and a minimal interaction prompt.
     /// </summary>
     public sealed class GameplayCompositionRoot : MonoBehaviour
     {
@@ -64,28 +61,29 @@ namespace Core.Bootstrap
             }
 
             spawnService = container.Resolve<SpawnService>();
+            if (spawnService == null)
+            {
+                Debug.LogError("SpawnService is not registered in DI container.");
+                return;
+            }
 
             SetupInputAndCamera();
             SetupControlAndInteractionServices();
 
             await SpawnCharacter();
-            await SpawnVehicles();
+            await SpawnVehiclesRandomPerSpawnPoint();
         }
 
         private void SetupInputAndCamera()
         {
             if (cameraRigController == null)
-            {
                 cameraRigController = Object.FindFirstObjectByType<CameraRigController>();
-            }
 
             IInputSource inputSource = new LocalInputSource();
             inputRouter = new InputRouter(inputSource);
 
             if (cameraRigController != null)
-            {
                 inputRouter.SetSecondaryConsumer(cameraRigController);
-            }
 
             InputRouterDriver driver = Object.FindFirstObjectByType<InputRouterDriver>();
             if (driver == null)
@@ -100,11 +98,6 @@ namespace Core.Bootstrap
         private void SetupControlAndInteractionServices()
         {
             ICameraRig cameraRig = cameraRigController;
-            if (cameraRig == null)
-            {
-                Debug.LogWarning("CameraRigController is not assigned. Camera follow will be disabled.");
-            }
-
             controlSwitcher = new ControlSwitcher(inputRouter, cameraRig);
             playerControlService = new PlayerControlService(controlSwitcher);
 
@@ -152,36 +145,27 @@ namespace Core.Bootstrap
             controlSwitcher.SetCharacterActive();
         }
 
-        private async UniTask SpawnVehicles()
+        private async UniTask SpawnVehiclesRandomPerSpawnPoint()
         {
-            if (vehicleConfigs == null || vehicleConfigs.Length == 0)
-            {
-                Debug.LogError("VehicleConfigs array is empty.");
-                return;
-            }
-
             if (vehicleSpawnPoints == null || vehicleSpawnPoints.Length == 0)
             {
                 Debug.LogError("Vehicle spawn points array is empty.");
                 return;
             }
 
-            int countToSpawn = Mathf.Min(vehicleConfigs.Length, vehicleSpawnPoints.Length);
+            if (vehicleConfigs == null || vehicleConfigs.Length == 0)
+            {
+                Debug.LogError("VehicleConfigs array is empty.");
+                return;
+            }
+
+            int countToSpawn = vehicleSpawnPoints.Length;
             spawnedVehicles = new VehicleRoot[countToSpawn];
 
             int i = 0;
             while (i < countToSpawn)
             {
-                VehicleConfig config = vehicleConfigs[i];
                 Transform spawnPoint = vehicleSpawnPoints[i];
-
-                if (config == null)
-                {
-                    Debug.LogError($"Vehicle config at index {i} is not assigned.");
-                    i++;
-                    continue;
-                }
-
                 if (spawnPoint == null)
                 {
                     Debug.LogError($"Vehicle spawn point at index {i} is not assigned.");
@@ -189,10 +173,22 @@ namespace Core.Bootstrap
                     continue;
                 }
 
-                Component spawned = await spawnService.SpawnVehicle(config, spawnPoint.position, spawnPoint.rotation);
+                VehicleConfig randomConfig = PickRandomVehicleConfig();
+                if (randomConfig == null)
+                {
+                    Debug.LogError("Random VehicleConfig is null. Check vehicleConfigs array.");
+                    i++;
+                    continue;
+                }
+
+                Component spawned = await spawnService.SpawnVehicle(
+                    randomConfig,
+                    spawnPoint.position,
+                    spawnPoint.rotation);
+
                 if (spawned == null)
                 {
-                    Debug.LogError($"SpawnVehicle returned null for index {i}.");
+                    Debug.LogError($"SpawnVehicle returned null for spawn point index {i}.");
                     i++;
                     continue;
                 }
@@ -204,11 +200,20 @@ namespace Core.Bootstrap
                     i++;
                     continue;
                 }
-
+                vehicleRoot.SetControlService(playerControlService);
                 spawnedVehicles[i] = vehicleRoot;
 
                 i++;
             }
+        }
+
+        private VehicleConfig PickRandomVehicleConfig()
+        {
+            if (vehicleConfigs == null || vehicleConfigs.Length == 0)
+                return null;
+
+            int index = Random.Range(0, vehicleConfigs.Length);
+            return vehicleConfigs[index];
         }
 
         private void Update()

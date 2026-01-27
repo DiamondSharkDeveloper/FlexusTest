@@ -229,19 +229,20 @@ MonoBehaviour:
   driverSeat: {fileID: 5181921390187600636}
   exitPoint: {fileID: 8027589965921647392}
   axles:
-  - LeftCollider: {fileID: 0}
-    RightCollider: {fileID: 0}
-    LeftVisual: {fileID: 0}
-    RightVisual: {fileID: 0}
+  - LeftCollider: {fileID: 1593438901479315043}
+    RightCollider: {fileID: 1563483163316733334}
+    LeftVisual: {fileID: 3126220363957210776}
+    RightVisual: {fileID: 2318643371566085402}
     Steer: 1
     Motor: 0
-  - LeftCollider: {fileID: 0}
-    RightCollider: {fileID: 0}
-    LeftVisual: {fileID: 0}
-    RightVisual: {fileID: 0}
+  - LeftCollider: {fileID: 1080181381548096512}
+    RightCollider: {fileID: 4511101076820205217}
+    LeftVisual: {fileID: 4533619747811864004}
+    RightVisual: {fileID: 4642826028111635497}
     Steer: 0
     Motor: 1
   vehicleConfig: {fileID: 0}
+  parkingBrakeTorque: 2000
 --- !u!114 &7707197609852273404
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -384,7 +385,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Car_13_Wheel_Rear_Left
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: -4795860414146467220, guid: b763623df7ad0f04d926bcc55b041438, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -497,7 +499,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5515955848155048965, guid: 96a8a78f39c44ee4397814cb7167b87e, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -610,7 +613,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Car_13_Wheel_Front_Right
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7567819360855559551, guid: c9166299cd4a387478e0b9e6aa559634, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -723,7 +727,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Car_13_Wheel_Rear_Right
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7303551079836179733, guid: e87d712833f9edf47878be457ad66ed9, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:

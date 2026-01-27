@@ -11,7 +11,6 @@ GameObject:
   - component: {fileID: 110291647750277198}
   - component: {fileID: 3902384736900089835}
   - component: {fileID: 1282674287580738337}
-  - component: {fileID: 1964961672323018446}
   - component: {fileID: 2040539108700960419}
   m_Layer: 0
   m_Name: Van_Wheel_Front_Right
@@ -86,28 +85,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &1964961672323018446
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 778002366730949364}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 1534441696505707083, guid: 888f98c0c7e576f489740009acd716e7, type: 3}
 --- !u!146 &2040539108700960419
 WheelCollider:
   m_ObjectHideFlags: 0
@@ -158,7 +135,6 @@ GameObject:
   - component: {fileID: 1271273649217122569}
   - component: {fileID: 2741464238830239404}
   - component: {fileID: 139422999353313894}
-  - component: {fileID: 334835129904339714}
   - component: {fileID: 5002439500903290337}
   m_Layer: 0
   m_Name: Van_Wheel_Rear_Left
@@ -233,28 +209,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &334835129904339714
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1940954727929277363}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -5702704069909367891, guid: 2fee7141f347d184585cbb9b6cbd972c, type: 3}
 --- !u!146 &5002439500903290337
 WheelCollider:
   m_ObjectHideFlags: 0
@@ -305,7 +259,6 @@ GameObject:
   - component: {fileID: 1476751438109855429}
   - component: {fileID: 2581022245092245856}
   - component: {fileID: 303242315328796074}
-  - component: {fileID: 4930915027453537294}
   - component: {fileID: 4846743124364371894}
   m_Layer: 0
   m_Name: Van_Wheel_Front_Left
@@ -380,28 +333,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &4930915027453537294
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2248889643714319487}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 2396450267589096457, guid: d2b9a77a94503754abad4a78c57ca1d3, type: 3}
 --- !u!146 &4846743124364371894
 WheelCollider:
   m_ObjectHideFlags: 0
@@ -452,7 +383,6 @@ GameObject:
   - component: {fileID: 3447498041779848221}
   - component: {fileID: 1763197330446322616}
   - component: {fileID: 4583773716323467122}
-  - component: {fileID: 4550825883138161922}
   - component: {fileID: 5528108307442482227}
   m_Layer: 0
   m_Name: Van_Wheel_Rear_Right
@@ -527,28 +457,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!64 &4550825883138161922
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2638029216869047975}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 2320121977243780690, guid: 30cb54cef0406394ab6f3febb7068497, type: 3}
 --- !u!146 &5528108307442482227
 WheelCollider:
   m_ObjectHideFlags: 0
@@ -797,6 +705,7 @@ MonoBehaviour:
     Steer: 0
     Motor: 1
   vehicleConfig: {fileID: 0}
+  parkingBrakeTorque: 2000
 --- !u!114 &5950384804827808865
 MonoBehaviour:
   m_ObjectHideFlags: 0

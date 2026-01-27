@@ -272,6 +272,7 @@ MonoBehaviour:
     Steer: 0
     Motor: 1
   vehicleConfig: {fileID: 0}
+  parkingBrakeTorque: 2000
 --- !u!114 &851396755008615196
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -383,7 +384,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 1166152220249384149, guid: 728b87a23cedf1e46afe6290dea9a3f8, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -496,7 +498,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Car_16_Wheel_Rear_Left
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 878981683357405087, guid: 38d108126702e514abcf96e86830454e, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -609,7 +612,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 2195571329549448623, guid: 1c79623e8e743f74d8df9f4d74eee85e, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
@@ -722,7 +726,8 @@ PrefabInstance:
       propertyPath: m_Name
       value: Car_16_Wheel_Front_Left
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: -1101934542418878629, guid: 66b9ae7a2ef71184585f8c3c41cc8474, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
