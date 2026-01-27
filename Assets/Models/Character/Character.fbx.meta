@@ -13,7 +13,7 @@ ModelImporter:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
     resampleCurves: 1
-    optimizeGameObjects: 1
+    optimizeGameObjects: 0
     removeConstantScaleCurves: 0
     motionNodeName: 
     rigImportErrors: 
@@ -30,8 +30,6 @@ ModelImporter:
     animationScaleError: 0.5
     animationWrapMode: 0
     extraExposedTransformPaths:
-    - Ch09
-    - mixamorig6:Hips
     - mixamorig6:Hips/mixamorig6:LeftUpLeg
     - mixamorig6:Hips/mixamorig6:LeftUpLeg/mixamorig6:LeftLeg
     - mixamorig6:Hips/mixamorig6:LeftUpLeg/mixamorig6:LeftLeg/mixamorig6:LeftFoot

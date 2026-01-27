@@ -90,6 +90,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d62e3a6d3a1af44ead2392db195209f, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6438932176822923203}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 4d62e3a6d3a1af44ead2392db195209f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6124932628585202029}
   m_SourcePrefab: {fileID: 100100000, guid: 4d62e3a6d3a1af44ead2392db195209f, type: 3}
 --- !u!95 &1297941844385686005 stripped
 Animator:
@@ -126,7 +129,7 @@ CharacterController:
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0.76, z: 0}
+  m_Center: {x: 0, y: 0.79, z: 0}
 --- !u!114 &6438932176822923203
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -141,6 +144,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cameraTarget: {fileID: 6327700335791988608}
   animator: {fileID: 1297941844385686005}
+  interactionDetector: {fileID: 6124932628585202029}
+--- !u!114 &6124932628585202029
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5740061214016594229}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 34a5599ce636417fac970188f8d98463, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  radius: 2
+  interactableMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!4 &6327700335791988608 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -7730108265652452380, guid: 4d62e3a6d3a1af44ead2392db195209f, type: 3}

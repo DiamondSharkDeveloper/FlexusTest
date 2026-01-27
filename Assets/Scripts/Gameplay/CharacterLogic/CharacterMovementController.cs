@@ -4,8 +4,8 @@ using UnityEngine;
 namespace Gameplay.CharacterLogic
 {
     /// <summary>
-    /// Character movement based on CharacterController.
-    /// Movement is camera-relative: input direction is converted into world-space using camera forward/right.
+    /// CharacterController-based movement with camera-relative direction and gravity.
+    /// Input is set from Consume (Update), movement is applied from Tick (Update).
     /// </summary>
     public sealed class CharacterMovementController
     {
@@ -17,6 +17,8 @@ namespace Gameplay.CharacterLogic
         private Vector2 moveInput;
         private bool sprintHeld;
 
+        private float verticalVelocity;
+
         private float currentSpeed01;
         private float currentSpeed;
 
@@ -27,6 +29,9 @@ namespace Gameplay.CharacterLogic
         public float SprintSpeed { get; set; }
         public float RotationSpeed { get; set; }
 
+        public float Gravity { get; set; }
+        public float GroundStickForce { get; set; }
+
         public CharacterMovementController(CharacterController controller, Transform characterTransform)
         {
             this.controller = controller;
@@ -36,7 +41,17 @@ namespace Gameplay.CharacterLogic
 
             WalkSpeed = 3.5f;
             SprintSpeed = 6.5f;
-            RotationSpeed = 12f;
+            RotationSpeed = 14f;
+
+            Gravity = -20f;
+            GroundStickForce = -2f;
+
+            moveInput = Vector2.zero;
+            sprintHeld = false;
+
+            verticalVelocity = 0f;
+            currentSpeed01 = 0f;
+            currentSpeed = 0f;
         }
 
         public void SetCameraTransform(Transform cameraTransform)
@@ -54,21 +69,28 @@ namespace Gameplay.CharacterLogic
         {
             moveInput = Vector2.zero;
             sprintHeld = false;
+
+            verticalVelocity = 0f;
             currentSpeed01 = 0f;
             currentSpeed = 0f;
         }
 
         public void Tick(float deltaTime)
         {
+            ApplyHorizontalMovement(deltaTime);
+            ApplyGravity(deltaTime);
+        }
+
+        private void ApplyHorizontalMovement(float deltaTime)
+        {
             Vector3 desiredLocal = new Vector3(moveInput.x, 0f, moveInput.y);
             float magnitude = Mathf.Clamp01(desiredLocal.magnitude);
 
-            float targetSpeed = sprintHeld ? SprintSpeed : WalkSpeed;
-            float speed = targetSpeed * magnitude;
+            float maxSpeed = sprintHeld ? SprintSpeed : WalkSpeed;
+            float speed = maxSpeed * magnitude;
 
             currentSpeed = speed;
 
-            float maxSpeed = sprintHeld ? SprintSpeed : WalkSpeed;
             if (maxSpeed > 0.001f)
                 currentSpeed01 = Mathf.Clamp01(speed / maxSpeed);
             else
@@ -78,7 +100,6 @@ namespace Gameplay.CharacterLogic
                 return;
 
             Vector3 worldMove = BuildWorldMoveDirection(desiredLocal);
-
             if (worldMove.sqrMagnitude < 0.0001f)
                 return;
 
@@ -93,19 +114,35 @@ namespace Gameplay.CharacterLogic
             controller.Move(worldDir * speed * deltaTime);
         }
 
+        private void ApplyGravity(float deltaTime)
+        {
+            bool grounded = controller.isGrounded;
+
+            if (grounded && verticalVelocity < 0f)
+            {
+                verticalVelocity = GroundStickForce;
+            }
+            else
+            {
+                verticalVelocity += Gravity * deltaTime;
+            }
+
+            Vector3 verticalMove = new Vector3(0f, verticalVelocity, 0f);
+            controller.Move(verticalMove * deltaTime);
+        }
+
         private Vector3 BuildWorldMoveDirection(Vector3 desiredLocal)
         {
             if (cameraTransform == null)
             {
-                // Fallback: movement relative to character if camera is not available.
                 Vector3 forward = characterTransform.forward;
                 Vector3 right = characterTransform.right;
 
                 forward.y = 0f;
                 right.y = 0f;
 
-                forward = forward.sqrMagnitude > 0.0001f ? forward.normalized : Vector3.forward;
-                right = right.sqrMagnitude > 0.0001f ? right.normalized : Vector3.right;
+                if (forward.sqrMagnitude > 0.0001f) forward = forward.normalized;
+                if (right.sqrMagnitude > 0.0001f) right = right.normalized;
 
                 Vector3 move = (right * desiredLocal.x + forward * desiredLocal.z);
                 move.y = 0f;
@@ -118,8 +155,8 @@ namespace Gameplay.CharacterLogic
             camForward.y = 0f;
             camRight.y = 0f;
 
-            camForward = camForward.sqrMagnitude > 0.0001f ? camForward.normalized : Vector3.forward;
-            camRight = camRight.sqrMagnitude > 0.0001f ? camRight.normalized : Vector3.right;
+            if (camForward.sqrMagnitude > 0.0001f) camForward = camForward.normalized;
+            if (camRight.sqrMagnitude > 0.0001f) camRight = camRight.normalized;
 
             Vector3 world = (camRight * desiredLocal.x + camForward * desiredLocal.z);
             world.y = 0f;

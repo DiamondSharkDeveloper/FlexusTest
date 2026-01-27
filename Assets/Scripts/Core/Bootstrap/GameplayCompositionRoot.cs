@@ -1,16 +1,23 @@
-﻿using Core.DI;
-using Cysharp.Threading.Tasks;
+﻿using Cysharp.Threading.Tasks;
+using Core.DI;
 using Gameplay.CameraLogic;
 using Gameplay.CharacterLogic;
+using Gameplay.Control;
 using Gameplay.InputLogic;
+using Gameplay.InteractionLogic;
 using Gameplay.Spawning;
+using Gameplay.VehicleLogic;
 using UnityEngine;
 
 namespace Core.Bootstrap
 {
     /// <summary>
     /// Scene-level composition root for the gameplay scene.
-    /// Spawns initial entities and wires up input and camera.
+    /// Responsible for:
+    /// - wiring input router and camera rig
+    /// - spawning initial character and vehicles
+    /// - creating control switching and interaction services
+    /// - driving a minimal interaction prompt UI
     /// </summary>
     public sealed class GameplayCompositionRoot : MonoBehaviour
     {
@@ -24,10 +31,18 @@ namespace Core.Bootstrap
 
         [Header("Scene References")]
         [SerializeField] private CameraRigController cameraRigController;
+        [SerializeField] private InteractionPromptUI interactionPromptUI;
 
         private SpawnService spawnService;
 
         private InputRouter inputRouter;
+        private ControlSwitcher controlSwitcher;
+        private PlayerControlService playerControlService;
+
+        private CharacterRoot spawnedCharacter;
+        private VehicleRoot[] spawnedVehicles;
+
+        private bool initialized;
 
         private async void Start()
         {
@@ -36,6 +51,11 @@ namespace Core.Bootstrap
 
         private async UniTask Initialize()
         {
+            if (initialized)
+                return;
+
+            initialized = true;
+
             DIContainer container = DIContainerAccessor.Container;
             if (container == null)
             {
@@ -46,6 +66,7 @@ namespace Core.Bootstrap
             spawnService = container.Resolve<SpawnService>();
 
             SetupInputAndCamera();
+            SetupControlAndInteractionServices();
 
             await SpawnCharacter();
             await SpawnVehicles();
@@ -76,6 +97,20 @@ namespace Core.Bootstrap
             driver.Construct(inputRouter);
         }
 
+        private void SetupControlAndInteractionServices()
+        {
+            ICameraRig cameraRig = cameraRigController;
+            if (cameraRig == null)
+            {
+                Debug.LogWarning("CameraRigController is not assigned. Camera follow will be disabled.");
+            }
+
+            controlSwitcher = new ControlSwitcher(inputRouter, cameraRig);
+            playerControlService = new PlayerControlService(controlSwitcher);
+
+            spawnedVehicles = new VehicleRoot[0];
+        }
+
         private async UniTask SpawnCharacter()
         {
             if (characterConfig == null)
@@ -96,24 +131,25 @@ namespace Core.Bootstrap
                 characterSpawnPoint.rotation);
 
             if (spawned == null)
+            {
+                Debug.LogError("SpawnCharacter returned null.");
                 return;
+            }
 
-            CharacterRoot characterRoot =
-                spawned.GetComponent<CharacterRoot>();
-
+            CharacterRoot characterRoot = spawned.GetComponent<CharacterRoot>();
             if (characterRoot == null)
             {
                 Debug.LogError("Spawned character prefab has no CharacterRoot.");
                 return;
             }
 
-            characterRoot.EnableControl();
+            spawnedCharacter = characterRoot;
 
-            if (inputRouter != null)
-                inputRouter.SetPrimaryConsumer(characterRoot);
+            playerControlService.RegisterCharacter(characterRoot);
+            characterRoot.SetControlService(playerControlService);
 
-            if (cameraRigController != null && characterRoot.CameraTarget != null)
-                cameraRigController.SetTarget(characterRoot.CameraTarget);
+            controlSwitcher.RegisterCharacter(characterRoot, characterRoot.CameraTarget);
+            controlSwitcher.SetCharacterActive();
         }
 
         private async UniTask SpawnVehicles()
@@ -131,6 +167,7 @@ namespace Core.Bootstrap
             }
 
             int countToSpawn = Mathf.Min(vehicleConfigs.Length, vehicleSpawnPoints.Length);
+            spawnedVehicles = new VehicleRoot[countToSpawn];
 
             int i = 0;
             while (i < countToSpawn)
@@ -152,9 +189,65 @@ namespace Core.Bootstrap
                     continue;
                 }
 
-                await spawnService.SpawnVehicle(config, spawnPoint.position, spawnPoint.rotation);
+                Component spawned = await spawnService.SpawnVehicle(config, spawnPoint.position, spawnPoint.rotation);
+                if (spawned == null)
+                {
+                    Debug.LogError($"SpawnVehicle returned null for index {i}.");
+                    i++;
+                    continue;
+                }
+
+                VehicleRoot vehicleRoot = spawned.GetComponent<VehicleRoot>();
+                if (vehicleRoot == null)
+                {
+                    Debug.LogError("Spawned vehicle prefab has no VehicleRoot.");
+                    i++;
+                    continue;
+                }
+
+                spawnedVehicles[i] = vehicleRoot;
+
                 i++;
             }
+        }
+
+        private void Update()
+        {
+            UpdateInteractionPrompt();
+        }
+
+        private void UpdateInteractionPrompt()
+        {
+            if (interactionPromptUI == null)
+                return;
+
+            if (spawnedCharacter == null)
+            {
+                interactionPromptUI.Hide();
+                return;
+            }
+
+            if (!spawnedCharacter.gameObject.activeInHierarchy)
+            {
+                interactionPromptUI.Hide();
+                return;
+            }
+
+            CharacterInteractionDetector detector = spawnedCharacter.GetComponent<CharacterInteractionDetector>();
+            if (detector == null)
+            {
+                interactionPromptUI.Hide();
+                return;
+            }
+
+            IInteractable current = detector.Current;
+            if (current == null)
+            {
+                interactionPromptUI.Hide();
+                return;
+            }
+
+            interactionPromptUI.Show(current.Prompt);
         }
     }
 }

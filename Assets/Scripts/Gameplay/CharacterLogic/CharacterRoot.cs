@@ -1,6 +1,7 @@
 ﻿using Gameplay.Control;
 using Gameplay.InputLogic;
 using UnityEngine;
+using Gameplay.InteractionLogic;
 
 namespace Gameplay.CharacterLogic
 {
@@ -14,11 +15,12 @@ namespace Gameplay.CharacterLogic
         [Header("References")]
         [SerializeField] private Transform cameraTarget;
         [SerializeField] private Animator animator;
-
+        [SerializeField]private CharacterInteractionDetector interactionDetector;
         private CharacterController characterController;
         private CharacterMovementController movementController;
         private CharacterAnimationController animationController;
-        private CharacterInteractionDetector interactionDetector;
+        
+        private PlayerControlService controlService;
 
         private bool isControlEnabled;
 
@@ -36,7 +38,6 @@ namespace Gameplay.CharacterLogic
             Camera mainCamera = Camera.main;
             if (mainCamera != null)
                 movementController.SetCameraTransform(mainCamera.transform);
-            interactionDetector = GetComponent<CharacterInteractionDetector>();
             if (interactionDetector == null)
                 interactionDetector = gameObject.AddComponent<CharacterInteractionDetector>();
         }
@@ -45,7 +46,8 @@ namespace Gameplay.CharacterLogic
         {
             if (!isControlEnabled)
                 return;
-
+            
+            interactionDetector.TickScan();
             movementController.Tick(Time.deltaTime);
         }
 
@@ -81,8 +83,15 @@ namespace Gameplay.CharacterLogic
             float animSpeed = Mathf.Lerp(0.9f, 1.6f, movementController.CurrentSpeed01);
             animationController.SetMoveAnimSpeed(animSpeed);
 
-            if (input.InteractPressed)
-                interactionDetector.TryInteract();
+            if (input.InteractPressed && controlService != null)
+            {
+                InteractionContext context = new InteractionContext(this, controlService);
+                interactionDetector.TryInteract(context);
+            }
+        }
+        public void SetControlService(PlayerControlService controlService)
+        {
+            this.controlService = controlService;
         }
     }
 }
