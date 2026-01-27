@@ -33,7 +33,9 @@ namespace Gameplay.CharacterLogic
 
             movementController = new CharacterMovementController(characterController, transform);
             animationController = new CharacterAnimationController(animator);
-
+            Camera mainCamera = Camera.main;
+            if (mainCamera != null)
+                movementController.SetCameraTransform(mainCamera.transform);
             interactionDetector = GetComponent<CharacterInteractionDetector>();
             if (interactionDetector == null)
                 interactionDetector = gameObject.AddComponent<CharacterInteractionDetector>();
