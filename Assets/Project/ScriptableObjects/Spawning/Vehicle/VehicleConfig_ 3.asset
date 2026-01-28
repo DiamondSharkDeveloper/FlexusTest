@@ -16,10 +16,10 @@ MonoBehaviour:
     value: 
   address: car_3
   Prefab: {fileID: 0}
-  MotorTorque: 3000
+  MotorTorque: 5000
   BrakeTorque: 4000
-  MaxSteerAngle: 33
-  MaxSpeedMps: 30
+  MaxSteerAngle: 34
+  MaxSpeedMps: 40
   CenterOfMassOffset: {x: 0, y: -0.5, z: 0}
   FrontAntiRollForce: 9000
   RearAntiRollForce: 6500
