@@ -1,63 +1,52 @@
 ﻿using Gameplay.InputLogic;
+using Gameplay.Spawning;
 using UnityEngine;
 
 namespace Gameplay.VehicleLogic
 {
     /// <summary>
     /// WheelCollider-based vehicle controller.
-    /// Applies motor, steering and braking in FixedUpdate.
-    /// Includes a simple anti-roll force to prevent rollovers on sharp steering at speed.
+    /// - Applies motor, steering and braking in FixedTick.
+    /// - Uses VehicleConfig for tuning including max speed.
+    /// - Includes integrated anti-roll forces for stability.
     /// </summary>
     public sealed class VehicleController
     {
         private readonly Rigidbody body;
         private readonly AxleSetup[] axles;
 
-        private float motorTorque;
-        private float brakeTorque;
-        private float maxSteerAngle;
+        private VehicleConfig config;
 
-        private Vector3 centerOfMassOffset;
+        private bool centerOfMassApplied;
 
         private Vector2 moveInput;
         private bool brakeHeld;
-
-        private float frontAntiRollForce;
-        private float rearAntiRollForce;
 
         public VehicleController(Rigidbody body, AxleSetup[] axles)
         {
             this.body = body;
             this.axles = axles;
 
-            motorTorque = 1200f;
-            brakeTorque = 3000f;
-            maxSteerAngle = 22f;
-
-            centerOfMassOffset = new Vector3(0f, -0.6f, 0f);
+            config = null;
+            centerOfMassApplied = false;
 
             moveInput = Vector2.zero;
             brakeHeld = false;
-
-            frontAntiRollForce = 9000f;
-            rearAntiRollForce = 7000f;
         }
 
-        public void ApplySettings(float motorTorque, float brakeTorque, float maxSteerAngle, Vector3 centerOfMassOffset)
+        public void ApplySettings(VehicleConfig config)
         {
-            this.motorTorque = motorTorque;
-            this.brakeTorque = brakeTorque;
-            this.maxSteerAngle = maxSteerAngle;
-            this.centerOfMassOffset = centerOfMassOffset;
+            this.config = config;
 
-            if (body != null)
-                body.centerOfMass += centerOfMassOffset;
-        }
+            if (this.config == null)
+                return;
 
-        public void SetAntiRoll(float frontForce, float rearForce)
-        {
-            frontAntiRollForce = Mathf.Max(0f, frontForce);
-            rearAntiRollForce = Mathf.Max(0f, rearForce);
+            // Apply COM once to avoid stacking on re-enter.
+            if (!centerOfMassApplied && body != null)
+            {
+                body.centerOfMass += this.config.CenterOfMassOffset;
+                centerOfMassApplied = true;
+            }
         }
 
         public void SetInput(in GameplayInput input)
@@ -74,6 +63,9 @@ namespace Gameplay.VehicleLogic
 
         public void FixedTick()
         {
+            if (config == null)
+                return;
+
             if (axles == null || axles.Length == 0)
                 return;
 
@@ -83,10 +75,15 @@ namespace Gameplay.VehicleLogic
             float speed = body != null ? body.velocity.magnitude : 0f;
 
             float steerFactor = ComputeSteerFactor(speed);
-            float steerAngle = steerInput * maxSteerAngle * steerFactor;
+            float steerAngle = steerInput * config.MaxSteerAngle * steerFactor;
 
-            float motor = throttleInput * motorTorque;
-            float brake = brakeHeld ? brakeTorque : 0f;
+            float motor = throttleInput * config.MotorTorque;
+
+            // Soft limiter: stop applying positive motor torque when above max speed.
+            if (speed >= config.MaxSpeedMps && motor > 0f)
+                motor = 0f;
+
+            float brake = brakeHeld ? config.BrakeTorque : 0f;
 
             int i = 0;
             while (i < axles.Length)
@@ -98,44 +95,65 @@ namespace Gameplay.VehicleLogic
                     continue;
                 }
 
-                if (axle.Steer)
-                {
-                    SetSteer(axle.LeftCollider, steerAngle);
-                    SetSteer(axle.RightCollider, steerAngle);
-                }
-                else
-                {
-                    SetSteer(axle.LeftCollider, 0f);
-                    SetSteer(axle.RightCollider, 0f);
-                }
-
-                if (axle.Motor)
-                {
-                    SetMotor(axle.LeftCollider, motor);
-                    SetMotor(axle.RightCollider, motor);
-                }
-                else
-                {
-                    SetMotor(axle.LeftCollider, 0f);
-                    SetMotor(axle.RightCollider, 0f);
-                }
-
-                SetBrake(axle.LeftCollider, brake);
-                SetBrake(axle.RightCollider, brake);
+                ApplyAxle(axle, steerAngle, motor, brake);
 
                 i++;
             }
 
             ApplyAntiRollBars();
+            LimitSpeedHard();
+        }
+
+        private void ApplyAxle(AxleSetup axle, float steerAngle, float motor, float brake)
+        {
+            if (axle.Steer)
+            {
+                SetSteer(axle.LeftCollider, steerAngle);
+                SetSteer(axle.RightCollider, steerAngle);
+            }
+            else
+            {
+                SetSteer(axle.LeftCollider, 0f);
+                SetSteer(axle.RightCollider, 0f);
+            }
+
+            if (axle.Motor)
+            {
+                SetMotor(axle.LeftCollider, motor);
+                SetMotor(axle.RightCollider, motor);
+            }
+            else
+            {
+                SetMotor(axle.LeftCollider, 0f);
+                SetMotor(axle.RightCollider, 0f);
+            }
+
+            SetBrake(axle.LeftCollider, brake);
+            SetBrake(axle.RightCollider, brake);
         }
 
         private float ComputeSteerFactor(float speed)
         {
-            // Aggressive stability curve:
-            // 0-3 m/s  -> full steering
-            // 12+ m/s -> 25% steering
-            float t = Mathf.InverseLerp(3f, 12f, speed);
-            return Mathf.Lerp(1f, 0.25f, t);
+            // Responsive steering. Stability is mostly handled by speed limit + anti-roll.
+            // 0-5 m/s  -> 100% steer
+            // 25+ m/s -> 65% steer
+            float t = Mathf.InverseLerp(5f, 25f, speed);
+            return Mathf.Lerp(1f, 0.65f, t);
+        }
+
+        private void LimitSpeedHard()
+        {
+            if (body == null)
+                return;
+
+            if (config == null)
+                return;
+
+            float speed = body.velocity.magnitude;
+            if (speed <= config.MaxSpeedMps)
+                return;
+
+            body.velocity = body.velocity.normalized * config.MaxSpeedMps;
         }
 
         private void ApplyAntiRollBars()
@@ -143,25 +161,19 @@ namespace Gameplay.VehicleLogic
             if (body == null)
                 return;
 
-            WheelCollider fl = null;
-            WheelCollider fr = null;
-            WheelCollider rl = null;
-            WheelCollider rr = null;
+            if (config == null)
+                return;
+
+            WheelCollider frontLeft = null;
+            WheelCollider frontRight = null;
+            WheelCollider rearLeft = null;
+            WheelCollider rearRight = null;
 
             int i = 0;
             while (i < axles.Length)
             {
                 AxleSetup axle = axles[i];
-                if (axle == null)
-                {
-                    i++;
-                    continue;
-                }
-
-                bool hasLeft = axle.LeftCollider != null;
-                bool hasRight = axle.RightCollider != null;
-
-                if (!hasLeft || !hasRight)
+                if (axle == null || axle.LeftCollider == null || axle.RightCollider == null)
                 {
                     i++;
                     continue;
@@ -169,20 +181,20 @@ namespace Gameplay.VehicleLogic
 
                 if (axle.Steer)
                 {
-                    fl = axle.LeftCollider;
-                    fr = axle.RightCollider;
+                    frontLeft = axle.LeftCollider;
+                    frontRight = axle.RightCollider;
                 }
                 else
                 {
-                    rl = axle.LeftCollider;
-                    rr = axle.RightCollider;
+                    rearLeft = axle.LeftCollider;
+                    rearRight = axle.RightCollider;
                 }
 
                 i++;
             }
 
-            ApplyAntiRollPair(fl, fr, frontAntiRollForce);
-            ApplyAntiRollPair(rl, rr, rearAntiRollForce);
+            ApplyAntiRollPair(frontLeft, frontRight, config.FrontAntiRollForce);
+            ApplyAntiRollPair(rearLeft, rearRight, config.RearAntiRollForce);
         }
 
         private void ApplyAntiRollPair(WheelCollider left, WheelCollider right, float antiRollForce)

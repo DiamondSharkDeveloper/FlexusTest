@@ -1,11 +1,12 @@
 ﻿using Cysharp.Threading.Tasks;
+using Gameplay.VehicleLogic;
 using UnityEngine;
 
 namespace Gameplay.Spawning
 {
     /// <summary>
     /// Central spawn entry point used by gameplay initialization.
-    /// Keeps spawning logic consistent and makes it easy to swap factories later.
+    /// Spawns prefabs and performs minimal post-spawn wiring.
     /// </summary>
     public sealed class SpawnService
     {
@@ -25,9 +26,17 @@ namespace Gameplay.Spawning
             return characterFactory.Spawn(config, position, rotation);
         }
 
-        public UniTask<Component> SpawnVehicle(VehicleConfig config, Vector3 position, Quaternion rotation)
+        public async UniTask<Component> SpawnVehicle(VehicleConfig config, Vector3 position, Quaternion rotation)
         {
-            return vehicleFactory.Spawn(config, position, rotation);
+            Component spawned = await vehicleFactory.Spawn(config, position, rotation);
+            if (spawned == null)
+                return null;
+
+            VehicleRoot vehicleRoot = spawned.GetComponent<VehicleRoot>();
+            if (vehicleRoot != null)
+                vehicleRoot.SetConfig(config);
+
+            return spawned;
         }
     }
 }

@@ -8,10 +8,8 @@ namespace Gameplay.VehicleLogic
 {
     /// <summary>
     /// Vehicle entry point for control and physics.
-    /// - Rigidbody stays dynamic all the time.
-    /// - When controlled: applies motor/steer/brake in FixedUpdate.
-    /// - When not controlled: applies a parking brake for stability.
-    /// - Handles exit input (E) while driving, so player can always leave the vehicle.
+    /// VehicleConfig is injected after spawn (not required in the prefab inspector).
+    /// Wheel visuals are synced every FixedUpdate.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public sealed class VehicleRoot : MonoBehaviour, IControllable
@@ -26,9 +24,6 @@ namespace Gameplay.VehicleLogic
         [Header("Wheel Setup")]
         [SerializeField] private AxleSetup[] axles;
 
-        [Header("Config (optional)")]
-        [SerializeField] private VehicleConfig vehicleConfig;
-
         [Header("Stability")]
         [SerializeField] private float parkingBrakeTorque = 2000f;
 
@@ -37,7 +32,9 @@ namespace Gameplay.VehicleLogic
         private WheelVisualSync wheelVisualSync;
 
         private bool isControlEnabled;
+        private bool configApplied;
 
+        
         private PlayerControlService controlService;
 
         public Transform CameraTarget => cameraTarget;
@@ -49,25 +46,32 @@ namespace Gameplay.VehicleLogic
             this.controlService = controlService;
         }
 
+        public void SetConfig(VehicleConfig vehicleConfig)
+        {
+            if (controller == null)
+                return;
+
+            controller.ApplySettings(vehicleConfig);
+            configApplied = vehicleConfig != null;
+        }
+
         private void Awake()
         {
             body = GetComponent<Rigidbody>();
-
             SetupRigidbodyDefaults();
 
             controller = new VehicleController(body, axles);
             wheelVisualSync = new WheelVisualSync();
 
-            ApplyConfigIfAvailable();
-
             isControlEnabled = false;
+            configApplied = false;
         }
 
         private void FixedUpdate()
         {
             SyncWheelVisuals();
 
-            if (isControlEnabled)
+            if (isControlEnabled && configApplied)
             {
                 controller.FixedTick();
             }
@@ -107,35 +111,6 @@ namespace Gameplay.VehicleLogic
             controller.SetInput(in input);
         }
 
-        private void SetupRigidbodyDefaults()
-        {
-            body.isKinematic = false;
-
-            body.interpolation = RigidbodyInterpolation.Interpolate;
-            body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
-
-            if (body.mass < 500f)
-                body.mass = 1400f;
-
-            if (body.angularDrag < 0.05f)
-                body.angularDrag = 0.7f;
-
-            if (body.drag < 0.01f)
-                body.drag = 0.05f;
-        }
-
-        private void ApplyConfigIfAvailable()
-        {
-            if (vehicleConfig == null)
-                return;
-
-            controller.ApplySettings(
-                vehicleConfig.MotorTorque,
-                vehicleConfig.BrakeTorque,
-                vehicleConfig.MaxSteerAngle,
-                vehicleConfig.CenterOfMassOffset);
-        }
-
         private void SyncWheelVisuals()
         {
             if (axles == null || axles.Length == 0)
@@ -156,6 +131,23 @@ namespace Gameplay.VehicleLogic
 
                 i++;
             }
+        }
+
+        private void SetupRigidbodyDefaults()
+        {
+            body.isKinematic = false;
+
+            body.interpolation = RigidbodyInterpolation.Interpolate;
+            body.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
+            if (body.mass < 500f)
+                body.mass = 1400f;
+
+            if (body.angularDrag < 0.05f)
+                body.angularDrag = 0.7f;
+
+            if (body.drag < 0.01f)
+                body.drag = 0.05f;
         }
 
         private void ApplyParkingBrake()
