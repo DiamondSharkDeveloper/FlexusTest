@@ -1,4 +1,5 @@
 ﻿using Cysharp.Threading.Tasks;
+using Gameplay.CameraLogic;
 using Gameplay.VehicleLogic;
 using UnityEngine;
 
@@ -12,6 +13,7 @@ namespace Gameplay.Spawning
     {
         private readonly ISpawnFactory<CharacterConfig, Component> characterFactory;
         private readonly ISpawnFactory<VehicleConfig, Component> vehicleFactory;
+      
 
         public SpawnService(
             ISpawnFactory<CharacterConfig, Component> characterFactory,
@@ -35,6 +37,12 @@ namespace Gameplay.Spawning
             VehicleRoot vehicleRoot = spawned.GetComponent<VehicleRoot>();
             if (vehicleRoot != null)
                 vehicleRoot.SetConfig(config);
+
+            VehicleDamage damage = spawned.GetComponent<VehicleDamage>();
+            if (damage != null)
+            {
+                damage.SetConfig(config);
+            }
 
             return spawned;
         }

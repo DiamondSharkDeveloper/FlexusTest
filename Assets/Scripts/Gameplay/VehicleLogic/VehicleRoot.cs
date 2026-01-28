@@ -1,7 +1,6 @@
 ﻿using Gameplay.Control;
 using Gameplay.InputLogic;
 using Gameplay.InteractionLogic;
-using Gameplay.Spawning;
 using UnityEngine;
 
 namespace Gameplay.VehicleLogic
@@ -9,7 +8,7 @@ namespace Gameplay.VehicleLogic
     /// <summary>
     /// Vehicle entry point for control and physics.
     /// VehicleConfig is injected after spawn (not required in the prefab inspector).
-    /// Wheel visuals are synced every FixedUpdate.
+    /// Nitro particles are enabled while nitro is active.
     /// </summary>
     [RequireComponent(typeof(Rigidbody))]
     public sealed class VehicleRoot : MonoBehaviour, IControllable
@@ -27,6 +26,9 @@ namespace Gameplay.VehicleLogic
         [Header("Stability")]
         [SerializeField] private float parkingBrakeTorque = 2000f;
 
+        [Header("Nitro VFX")]
+        [SerializeField] private ParticleSystem nitroParticles;
+
         private Rigidbody body;
         private VehicleController controller;
         private WheelVisualSync wheelVisualSync;
@@ -34,7 +36,6 @@ namespace Gameplay.VehicleLogic
         private bool isControlEnabled;
         private bool configApplied;
 
-        
         private PlayerControlService controlService;
 
         public Transform CameraTarget => cameraTarget;
@@ -55,6 +56,22 @@ namespace Gameplay.VehicleLogic
             configApplied = vehicleConfig != null;
         }
 
+        /// <summary>
+        /// Forces "exit vehicle" using the same flow as pressing E.
+        /// This is required for explosion cases, so the character becomes active again.
+        /// </summary>
+        public void ForceExitToCharacter()
+        {
+            if (controlService != null)
+            {
+                controlService.ExitVehicle();
+                return;
+            }
+
+            // Fallback: at least stop vehicle input if control service is missing.
+            DisableControl();
+        }
+
         private void Awake()
         {
             body = GetComponent<Rigidbody>();
@@ -65,6 +82,8 @@ namespace Gameplay.VehicleLogic
 
             isControlEnabled = false;
             configApplied = false;
+
+            DisableNitroVfx();
         }
 
         private void FixedUpdate()
@@ -79,6 +98,8 @@ namespace Gameplay.VehicleLogic
             {
                 ApplyParkingBrake();
             }
+
+            UpdateNitroVfx();
         }
 
         public void EnableControl()
@@ -95,6 +116,8 @@ namespace Gameplay.VehicleLogic
 
             controller.ClearInput();
             ApplyParkingBrake();
+
+            DisableNitroVfx();
         }
 
         public void Consume(in GameplayInput input)
@@ -131,6 +154,40 @@ namespace Gameplay.VehicleLogic
 
                 i++;
             }
+        }
+
+        private void UpdateNitroVfx()
+        {
+            if (nitroParticles == null)
+                return;
+
+            bool active = isControlEnabled && configApplied && controller.IsNitroActive;
+
+            ParticleSystem.EmissionModule emission = nitroParticles.emission;
+            emission.enabled = active;
+
+            if (active)
+            {
+                if (!nitroParticles.isPlaying)
+                    nitroParticles.Play(true);
+            }
+            else
+            {
+                if (nitroParticles.isPlaying)
+                    nitroParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            }
+        }
+
+        private void DisableNitroVfx()
+        {
+            if (nitroParticles == null)
+                return;
+
+            ParticleSystem.EmissionModule emission = nitroParticles.emission;
+            emission.enabled = false;
+
+            if (nitroParticles.isPlaying)
+                nitroParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
         }
 
         private void SetupRigidbodyDefaults()

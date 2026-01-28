@@ -1,14 +1,13 @@
 ﻿using Gameplay.InputLogic;
-using Gameplay.Spawning;
 using UnityEngine;
 
 namespace Gameplay.VehicleLogic
 {
     /// <summary>
     /// WheelCollider-based vehicle controller.
-    /// - Applies motor, steering and braking in FixedTick.
-    /// - Uses VehicleConfig for tuning including max speed.
-    /// - Includes integrated anti-roll forces for stability.
+    /// - Motor, steering, braking in FixedTick.
+    /// - Nitro on Shift (uses SprintHeld from GameplayInput).
+    /// - Anti-roll integrated for stability.
     /// </summary>
     public sealed class VehicleController
     {
@@ -21,6 +20,21 @@ namespace Gameplay.VehicleLogic
 
         private Vector2 moveInput;
         private bool brakeHeld;
+        private bool nitroHeld;
+
+        private float nitroAmount01;
+        private float nitroRamp01;
+
+        public bool IsNitroActive
+        {
+            get
+            {
+                if (config == null)
+                    return false;
+
+                return nitroHeld && nitroAmount01 > 0.001f;
+            }
+        }
 
         public VehicleController(Rigidbody body, AxleSetup[] axles)
         {
@@ -32,6 +46,10 @@ namespace Gameplay.VehicleLogic
 
             moveInput = Vector2.zero;
             brakeHeld = false;
+            nitroHeld = false;
+
+            nitroAmount01 = 1f;
+            nitroRamp01 = 0f;
         }
 
         public void ApplySettings(VehicleConfig config)
@@ -41,24 +59,28 @@ namespace Gameplay.VehicleLogic
             if (this.config == null)
                 return;
 
-            // Apply COM once to avoid stacking on re-enter.
             if (!centerOfMassApplied && body != null)
             {
                 body.centerOfMass += this.config.CenterOfMassOffset;
                 centerOfMassApplied = true;
             }
+
+            nitroAmount01 = 1f;
+            nitroRamp01 = 0f;
         }
 
         public void SetInput(in GameplayInput input)
         {
             moveInput = input.Move;
             brakeHeld = input.BrakeHeld;
+            nitroHeld = input.SprintHeld;
         }
 
         public void ClearInput()
         {
             moveInput = Vector2.zero;
             brakeHeld = false;
+            nitroHeld = false;
         }
 
         public void FixedTick()
@@ -69,6 +91,8 @@ namespace Gameplay.VehicleLogic
             if (axles == null || axles.Length == 0)
                 return;
 
+            UpdateNitro(Time.fixedDeltaTime);
+
             float steerInput = Mathf.Clamp(moveInput.x, -1f, 1f);
             float throttleInput = Mathf.Clamp(moveInput.y, -1f, 1f);
 
@@ -77,9 +101,9 @@ namespace Gameplay.VehicleLogic
             float steerFactor = ComputeSteerFactor(speed);
             float steerAngle = steerInput * config.MaxSteerAngle * steerFactor;
 
-            float motor = throttleInput * config.MotorTorque;
+            float nitroMultiplier = GetNitroTorqueMultiplier();
+            float motor = throttleInput * config.MotorTorque * nitroMultiplier;
 
-            // Soft limiter: stop applying positive motor torque when above max speed.
             if (speed >= config.MaxSpeedMps && motor > 0f)
                 motor = 0f;
 
@@ -102,6 +126,62 @@ namespace Gameplay.VehicleLogic
 
             ApplyAntiRollBars();
             LimitSpeedHard();
+        }
+
+        private void UpdateNitro(float dt)
+        {
+            float capacity = Mathf.Max(0.01f, config.NitroCapacitySeconds);
+            float regen = Mathf.Max(0f, config.NitroRegenRate);
+
+            bool wantsNitro = nitroHeld && nitroAmount01 > 0f;
+
+            if (wantsNitro)
+            {
+                float spendPerSecond = 1f / capacity;
+                nitroAmount01 = Mathf.Clamp01(nitroAmount01 - spendPerSecond * dt);
+
+                float rampSpeed = 1f / Mathf.Max(0.01f, config.NitroRampUpSeconds);
+                nitroRamp01 = Mathf.Clamp01(nitroRamp01 + rampSpeed * dt);
+            }
+            else
+            {
+                float regenPerSecond = regen / capacity;
+                nitroAmount01 = Mathf.Clamp01(nitroAmount01 + regenPerSecond * dt);
+
+                float rampDownSpeed = 2.5f;
+                nitroRamp01 = Mathf.Clamp01(nitroRamp01 - rampDownSpeed * dt);
+            }
+
+            if (nitroAmount01 <= 0.0001f)
+                nitroRamp01 = 0f;
+        }
+
+        private float GetNitroTorqueMultiplier()
+        {
+            bool active = nitroHeld && nitroAmount01 > 0.001f;
+            if (!active)
+                return 1f;
+
+            float extra = Mathf.Max(0f, config.NitroTorqueMultiplier - 1f);
+            return 1f + extra * nitroRamp01;
+        }
+
+        private float ComputeSteerFactor(float speed)
+        {
+            float t = Mathf.InverseLerp(5f, 18f, speed);
+            return Mathf.Lerp(1f, 0.55f, t);
+        }
+
+        private void LimitSpeedHard()
+        {
+            if (body == null)
+                return;
+
+            float speed = body.velocity.magnitude;
+            if (speed <= config.MaxSpeedMps)
+                return;
+
+            body.velocity = body.velocity.normalized * config.MaxSpeedMps;
         }
 
         private void ApplyAxle(AxleSetup axle, float steerAngle, float motor, float brake)
@@ -132,36 +212,9 @@ namespace Gameplay.VehicleLogic
             SetBrake(axle.RightCollider, brake);
         }
 
-        private float ComputeSteerFactor(float speed)
-        {
-            // Responsive steering. Stability is mostly handled by speed limit + anti-roll.
-            // 0-5 m/s  -> 100% steer
-            // 25+ m/s -> 65% steer
-            float t = Mathf.InverseLerp(5f, 25f, speed);
-            return Mathf.Lerp(1f, 0.65f, t);
-        }
-
-        private void LimitSpeedHard()
-        {
-            if (body == null)
-                return;
-
-            if (config == null)
-                return;
-
-            float speed = body.velocity.magnitude;
-            if (speed <= config.MaxSpeedMps)
-                return;
-
-            body.velocity = body.velocity.normalized * config.MaxSpeedMps;
-        }
-
         private void ApplyAntiRollBars()
         {
             if (body == null)
-                return;
-
-            if (config == null)
                 return;
 
             WheelCollider frontLeft = null;
